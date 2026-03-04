@@ -30,6 +30,10 @@ st.pyplot(fig1)
 st.subheader("Heatmap Korelasi")
 
 fig2, ax2 = plt.subplots()
-sns.heatmap(df.corr(), annot=True, cmap="coolwarm", ax=ax2)
+# Ambil hanya kolom numerik
+numeric_df = df.select_dtypes(include=['number'])
 
-st.pyplot(fig2)    
+fig2, ax2 = plt.subplots()
+sns.heatmap(numeric_df.corr(), annot=True, cmap="coolwarm", ax=ax2)
+
+st.pyplot(fig2)
