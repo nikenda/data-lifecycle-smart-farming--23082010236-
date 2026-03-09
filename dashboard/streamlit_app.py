@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 
+# KONFIGURASI HALAMAN
 st.set_page_config(page_title="Smart Farming Dashboard", layout="wide")
 
 # 1️⃣ LOAD DATA
@@ -11,7 +12,7 @@ df = pd.read_csv("Smart_Farming_Crop_Yield_2024.csv")
 
 st.title("🌱 Smart Farming Dashboard")
 
-# 2️⃣ FILTER (Sidebar)
+# 2️⃣ FILTER DATA (SIDEBAR)
 st.sidebar.header("Filter Data")
 
 region = st.sidebar.selectbox(
@@ -21,7 +22,16 @@ region = st.sidebar.selectbox(
 
 filtered_df = df[df["region"] == region]
 
-# 3️⃣ KPI
+# 3️⃣ QUERY DATA SESUAI PERMINTAAN
+data_query = filtered_df[['soil_moisture_%', 'temperature_C', 'humidity_%', 'soil_pH', 'yield_kg_per_hectare']]
+
+# nilai kelembaban terakhir
+kelembaban_sekarang = data_query['soil_moisture_%'].iloc[-1]
+
+# korelasi antar variabel
+korelasi_data = data_query.corr()
+
+# 4️⃣ KPI
 st.subheader("📊 Ringkasan Data")
 
 col1, col2, col3 = st.columns(3)
@@ -41,21 +51,27 @@ col3.metric(
     round(filtered_df["yield_kg_per_hectare"].mean(), 2)
 )
 
-# 4️⃣ GAUGE METER
+# 5️⃣ GAUGE SENSOR KELEMBABAN
 st.subheader("🌡 Gauge Sensor Kelembaban Tanah")
 
 gauge = go.Figure(go.Indicator(
     mode="gauge+number",
-    value=filtered_df["soil_moisture_%"].mean(),
+    value=kelembaban_sekarang,
     title={'text': "Soil Moisture (%)"},
     gauge={
-        'axis': {'range': [0, 100]}
+        'axis': {'range': [0, 100]},
+        'bar': {'color': "green"},
+        'steps': [
+            {'range': [0, 30], 'color': "red"},
+            {'range': [30, 60], 'color': "yellow"},
+            {'range': [60, 100], 'color': "lightgreen"}
+        ]
     }
 ))
 
 st.plotly_chart(gauge, use_container_width=True)
 
-# 5️⃣ GRAFIK
+# 6️⃣ GRAFIK
 colA, colB = st.columns(2)
 
 # --- Grafik Line (Time Series) ---
@@ -75,14 +91,12 @@ with colA:
 with colB:
     st.subheader("🔥 Heatmap Korelasi")
 
-    numeric_df = filtered_df.select_dtypes(include=["number"])
-
     fig2, ax2 = plt.subplots()
-    sns.heatmap(numeric_df.corr(), annot=True, cmap="coolwarm", ax=ax2)
+    sns.heatmap(korelasi_data, annot=True, cmap="coolwarm", ax=ax2)
 
     st.pyplot(fig2)
 
-# 6️⃣ INSIGHT / ALERT
+# 7️⃣ INSIGHT OTOMATIS
 st.subheader("🤖 Insight Otomatis")
 
 avg_moisture = filtered_df["soil_moisture_%"].mean()
