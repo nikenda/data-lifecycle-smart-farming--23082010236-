@@ -4,34 +4,25 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
 
-# KONFIGURASI HALAMAN
 st.set_page_config(page_title="Smart Farming Dashboard", layout="wide")
 
-# 1️⃣ LOAD DATA
 df = pd.read_csv("Smart_Farming_Crop_Yield_2024.csv")
 
 st.title("🌱 Smart Farming Dashboard")
 
-# 2️⃣ FILTER DATA (SIDEBAR)
 st.sidebar.header("Filter Data")
-
 region = st.sidebar.selectbox(
     "Pilih Region",
     df["region"].unique()
 )
 
 filtered_df = df[df["region"] == region]
-
-# 3️⃣ QUERY DATA SESUAI PERMINTAAN
 data_query = filtered_df[['soil_moisture_%', 'temperature_C', 'humidity_%', 'soil_pH', 'yield_kg_per_hectare']]
 
-# nilai kelembaban terakhir
 kelembaban_sekarang = data_query['soil_moisture_%'].iloc[-1]
 
-# korelasi antar variabel
 korelasi_data = data_query.corr()
 
-# 4️⃣ KPI
 st.subheader("📊 Ringkasan Data")
 
 col1, col2, col3 = st.columns(3)
@@ -51,7 +42,6 @@ col3.metric(
     round(filtered_df["yield_kg_per_hectare"].mean(), 2)
 )
 
-# 5️⃣ GAUGE SENSOR KELEMBABAN
 st.subheader("🌡 Gauge Sensor Kelembaban Tanah")
 
 gauge = go.Figure(go.Indicator(
@@ -71,7 +61,6 @@ gauge = go.Figure(go.Indicator(
 
 st.plotly_chart(gauge, use_container_width=True)
 
-# 6️⃣ GRAFIK
 colA, colB = st.columns(2)
 
 # --- Grafik Line (Time Series) ---
@@ -87,7 +76,6 @@ with colA:
 
     st.pyplot(fig1)
 
-# --- Heatmap Korelasi ---
 with colB:
     st.subheader("🔥 Heatmap Korelasi")
 
@@ -96,7 +84,6 @@ with colB:
 
     st.pyplot(fig2)
 
-# 7️⃣ INSIGHT OTOMATIS
 st.subheader("🤖 Insight Otomatis")
 
 avg_moisture = filtered_df["soil_moisture_%"].mean()
